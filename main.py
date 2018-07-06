@@ -1,13 +1,66 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from random import randint
+import pymysql
+import json
 
 
-def isint(s):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
+
+# def autorisation(ip):
+#     sessions = open('sessions.dat', 'r')
+#     sessions_r = sessions.read()
+#     sessions.close()
+#     print(sessions_r)
+#
+#     if not(ip in sessions_r):
+#         print(ip+' in '+sessions_r)
+#         print(ip in sessions_r)
+#         print(type(ip), type(sessions_r))
+#         sessions = open('sessions.dat', 'a')
+#         sessions.write(ip+' ')
+#         sessions.close()
+
+
+# def get_id():
+#     sessions = open('sessions.dat', 'r')
+#     sessions_r = sessions.read()
+#     sessions.close()
+#
+#     sessions = open('sessions.dat', 'a')
+#
+#     if free_users:
+#         num = min(free_users)  # id
+#     else:
+#         num = len(sessions_r.split())  # id
+#
+#     sessions.write(str(num)+' ')
+#     sessions.close()
+#     return str(num)
+
+
+# def isint(s):
+#     try:
+#         int(s)
+#         return True
+#     except ValueError:
+#         return False
+
+# def new_item(num, item):
+#     try:
+#         favors = open('users/'+num, 'r')
+#         favors_r = favors.read()
+#         favors.close()
+#     except FileNotFoundError:
+#         favors_r = ''
+#     favors = open('users/'+num, 'w')
+#     favors.write('\n'.join([favors_r, item]))
+#
+#
+# def del_item(num, n_item):
+#     favors = open('users/'+num, 'r')
+#     favors_r = favors.read()
+#     favors.close()
+#
+#     favors =  open('users/'+num, 'r')
 
 
 class HttpProcessor(BaseHTTPRequestHandler):
@@ -16,21 +69,34 @@ class HttpProcessor(BaseHTTPRequestHandler):
         self.send_header('content-type', 'text/html')
         self.end_headers()
         a = self.raw_requestline.decode().split()[1][1:]
-        if a == "hello":
+
+        if a.split('/')[0] == "hello":
             self.wfile.write(b'u a welcome')
-        elif isint(a):
-            db = open("db.", "r").read()
-            db = db.split('\n')
-            line = db[randint(0, len(db) - 1)]
-            self.wfile.write(line.encode())
+        elif a.split('/')[0] == 'getrandom':
+            cursor.execute("select * from main")
+            db = cursor.fetchall()
+            print(db)
+            db = db[randint(0, len(db)-1)]
+            db = {'name': db[1],
+                  'img': db[2],
+                  'url': db[3]}
+            print(json.dumps(db))
+            self.wfile.write(json.dumps(db).encode())
+            # db = open("db.dat", "r")
+            # db_r = db.read()
+            # db_r = db_r.split('\n')
+            # line = db_r[randint(0, len(db_r) - 1)]
+            # db.close()
+            # self.wfile.write(line.encode())
+        # elif a.split('/')[0] == 'getid':
+        #     self.wfile.write(get_id())
+        # elif a.split('/')[0] == 'newitem':
+        #     new_item(a.split('/')[1],
+        #              a.split('/')[2])
         else:
             self.wfile.write(b'He110')
 
-
-
-
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
         body = self.rfile.read()
 
         print(body)
@@ -42,7 +108,10 @@ class HttpProcessor(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    #serv = HTTPServer(("85.140.1.241", 430), HttpProcessor)
+    db = pymysql.connect("localhost", "root", "gfhjkm", "doni")
+    cursor = db.cursor()
+    cursor.execute("use doni")
+    # free_users = []
     serv = HTTPServer(("127.0.0.1", 430), HttpProcessor)
-    #serv = HTTPServer(("77.108.206.208", 430), HttpProcessor)
     serv.serve_forever()
+    db.close()
