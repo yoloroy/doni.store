@@ -44,17 +44,19 @@ import json
 #     except ValueError:
 #         return False
 
-# def new_item(num, item):
-#     try:
-#         favors = open('users/'+num, 'r')
-#         favors_r = favors.read()
-#         favors.close()
-#     except FileNotFoundError:
-#         favors_r = ''
-#     favors = open('users/'+num, 'w')
-#     favors.write('\n'.join([favors_r, item]))
-#
-#
+def new_item(a):
+    cursor.execute('select * from main')
+    fetch = cursor.fetchall()
+    n = len(fetch) + 1
+    l = a.replace('%20', ' ').split('|')
+    print(l)
+    print("insert into main values("+str(n)+", '"+l[0]+"', '"+l[1]+"', '"+l[2]+"')")
+    cursor.execute("insert into main values("+str(n)+", '"+l[0]+"', '"+l[1]+"', '"+l[2]+"')")
+    db.commit()
+    fetch = cursor.fetchall()
+    print(fetch)
+
+
 # def del_item(num, n_item):
 #     favors = open('users/'+num, 'r')
 #     favors_r = favors.read()
@@ -75,12 +77,10 @@ class HttpProcessor(BaseHTTPRequestHandler):
         elif a.split('/')[0] == 'getrandom':
             cursor.execute("select * from main")
             db = cursor.fetchall()
-            print(db)
             db = db[randint(0, len(db)-1)]
             db = {'name': db[1],
                   'img': db[2],
                   'url': db[3]}
-            print(json.dumps(db))
             self.wfile.write(json.dumps(db).encode())
             # db = open("db.dat", "r")
             # db_r = db.read()
@@ -90,9 +90,9 @@ class HttpProcessor(BaseHTTPRequestHandler):
             # self.wfile.write(line.encode())
         # elif a.split('/')[0] == 'getid':
         #     self.wfile.write(get_id())
-        # elif a.split('/')[0] == 'newitem':
-        #     new_item(a.split('/')[1],
-        #              a.split('/')[2])
+        elif a[:7] == 'newitem':
+            pprint(a[8:])
+            new_item(a[8:])
         else:
             self.wfile.write(b'He110')
 
