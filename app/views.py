@@ -16,7 +16,7 @@ def randitem():
     cursor = db.cursor()
     cursor.execute("use gifts")
     #cursor.execute("use doni")
-    cursor.execute("select * from main")
+    cursor.execute("select * from gifts")
     db = cursor.fetchall()
     db = db[randint(0, len(db) - 1)]
     db = {'name': db[1],
