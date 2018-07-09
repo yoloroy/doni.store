@@ -21,5 +21,6 @@ def randitem():
     db = db[randint(0, len(db) - 1)]
     db = {'name': db[1],
           'img': db[2],
-          'url': db[3]}
+          'url': db[3],
+          'price': db[4]}
     return dumps(db)
